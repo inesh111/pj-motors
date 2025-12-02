@@ -1,65 +1,152 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
+import { Car } from '@prisma/client';
 
-export default function Home() {
+type HomeProps = {
+  searchParams?: {
+    search?: string;
+  };
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const search = searchParams?.search ?? '';
+
+  const cars: Car[] = await prisma.car.findMany({
+    where: search
+      ? {
+          chassisCode: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        }
+      : {},
+    orderBy: { createdAt: 'desc' },
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto max-w-5xl px-4 py-8">
+        {/* Header */}
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              PJ Motors
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              Chassis-based tracking for Japan → Australia imports
+            </p>
+          </div>
+
+          <Link
+            href="/cars/new"
+            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black shadow-sm hover:bg-emerald-400"
+          >
+            + Add Car
+          </Link>
+        </header>
+
+        {/* Search */}
+        <form className="mb-4 flex gap-2" method="GET">
+          <input
+            type="text"
+            name="search"
+            defaultValue={search}
+            placeholder="Search by chassis code..."
+            className="flex-1 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none placeholder:text-slate-500 focus:border-emerald-500"
+          />
+          <button
+            type="submit"
+            className="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-800"
+          >
+            Search
+          </button>
+        </form>
+
+        {/* Table */}
+        {cars.length === 0 ? (
+          <p className="text-sm text-slate-400">
+            No cars found. Try a different search or add your first car.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60">
+            <table className="min-w-full text-sm">
+              <thead className="border-b border-slate-800 bg-slate-900/80">
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium text-slate-400">
+                    Chassis
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-400">
+                    Make
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-400">
+                    Model
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-400">
+                    Year
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-400">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {cars.map((car) => (
+                  <tr
+                    key={car.id}
+                    className="border-b border-slate-800/60 hover:bg-slate-800/50"
+                  >
+                    <td className="px-3 py-2">
+                      <Link
+                        href={`/cars/${car.id}`}
+                        className="font-mono text-xs text-emerald-400 hover:underline"
+                      >
+                        {car.chassisCode}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">{car.make}</td>
+                    <td className="px-3 py-2">{car.model}</td>
+                    <td className="px-3 py-2">{car.year ?? '-'}</td>
+                    <td className="px-3 py-2">
+                      <StatusBadge status={car.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; className: string }> = {
+    JAPAN: {
+      label: 'Japan',
+      className: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+    },
+    IN_TRANSIT: {
+      label: 'In Transit',
+      className: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
+    },
+    IN_AUSTRALIA: {
+      label: 'In Australia',
+      className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+    },
+    SOLD: {
+      label: 'Sold',
+      className: 'bg-slate-500/20 text-slate-200 border-slate-500/40',
+    },
+  };
+
+  const cfg = map[status] ?? map.JAPAN;
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${cfg.className}`}
+    >
+      {cfg.label}
+    </span>
   );
 }
