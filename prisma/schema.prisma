@@ -1,0 +1,63 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Car {
+  id                     Int           @id @default(autoincrement())
+  chassisCode            String        @unique
+  make                   String
+  model                  String
+  variant                String?
+  year                   Int?
+  colour                 String?
+  grade                  String?
+
+  totalPurchasePriceAUD  Decimal
+  salePrice              Decimal?
+  profit                 Decimal?
+
+  status                 CarStatus     @default(JAPAN)
+
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  documents              CarDocument[]
+}
+
+model CarDocument {
+  id        Int           @id @default(autoincrement())
+  carId     Int
+  car       Car           @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  type      DocumentType
+  filePath  String
+  name      String?
+
+  createdAt DateTime      @default(now())
+
+  @@index([carId, type])
+}
+
+enum CarStatus {
+  JAPAN
+  IN_TRANSIT
+  IN_AUSTRALIA
+  SOLD
+}
+
+enum DocumentType {
+  EXPORT_CERT
+  EXPENSE_SHEET
+  BL_DOC
+  VIA_DOC
+  COMPLIANCE_DOC
+  ROC_DOC
+  INVOICE_FROM_JAPAN
+  PAYMENT_PROOF
+  AUCTION_SHEET
+  CAR_PICTURE
+}
