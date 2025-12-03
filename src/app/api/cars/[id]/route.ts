@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-type RouteParams = {
-  params: {
+type RouteContext = {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // GET /api/cars/:id - get one car (with documents)
-export async function GET(_req: Request, { params }: RouteParams) {
-  const id = Number(params.id);
-  if (Number.isNaN(id)) {
+export async function GET(_req: Request, { params }: RouteContext) {
+  const { id } = await params;
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
   const car = await prisma.car.findUnique({
-    where: { id },
+    where: { id: numericId },
     include: { documents: true },
   });
 
@@ -27,9 +28,10 @@ export async function GET(_req: Request, { params }: RouteParams) {
 }
 
 // PATCH /api/cars/:id - update car
-export async function PATCH(req: Request, { params }: RouteParams) {
-  const id = Number(params.id);
-  if (Number.isNaN(id)) {
+export async function PATCH(req: Request, { params }: RouteContext) {
+  const { id } = await params;
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
@@ -78,7 +80,9 @@ export async function PATCH(req: Request, { params }: RouteParams) {
       body.totalPurchasePriceAUD !== undefined ||
       body.salePrice !== undefined
     ) {
-      const existing = await prisma.car.findUnique({ where: { id } });
+      const existing = await prisma.car.findUnique({
+        where: { id: numericId },
+      });
       if (!existing) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
@@ -95,7 +99,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
     }
 
     const updated = await prisma.car.update({
-      where: { id },
+      where: { id: numericId },
       data,
     });
 
@@ -110,14 +114,15 @@ export async function PATCH(req: Request, { params }: RouteParams) {
 }
 
 // DELETE /api/cars/:id - delete car
-export async function DELETE(_req: Request, { params }: RouteParams) {
-  const id = Number(params.id);
-  if (Number.isNaN(id)) {
+export async function DELETE(_req: Request, { params }: RouteContext) {
+  const { id } = await params;
+  const numericId = Number(id);
+  if (Number.isNaN(numericId)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   }
 
   try {
-    await prisma.car.delete({ where: { id } });
+    await prisma.car.delete({ where: { id: numericId } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Error deleting car', error);

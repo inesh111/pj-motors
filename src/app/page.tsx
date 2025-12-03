@@ -3,20 +3,20 @@ import { prisma } from '@/lib/prisma';
 import { Car } from '@prisma/client';
 
 type HomeProps = {
-  searchParams?: {
+  searchParams: Promise<{
     search?: string;
-  };
+  }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const search = searchParams?.search ?? '';
+  // ✅ Next.js 15: searchParams is a Promise
+  const { search = '' } = await searchParams;
 
   const cars: Car[] = await prisma.car.findMany({
     where: search
       ? {
           chassisCode: {
             contains: search,
-            mode: 'insensitive',
           },
         }
       : {},

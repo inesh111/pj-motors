@@ -11,7 +11,6 @@ export async function GET(req: Request) {
       ? {
           chassisCode: {
             contains: search,
-            mode: 'insensitive',
           },
         }
       : {},
