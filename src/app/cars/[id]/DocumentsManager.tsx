@@ -10,7 +10,7 @@ const DOC_DEFS = [
   { type: 'BL_DOC', label: 'B/L (Bill of Lading)' },
   { type: 'VIA_DOC', label: 'VIA – Vehicle Import Approval' },
   { type: 'COMPLIANCE_DOC', label: 'Compliance Document' },
-  { type: 'ROC_DOC', label: 'ROC Document' },
+  { type: 'RWC_DOC', label: 'RWC Document' },
   { type: 'INVOICE_FROM_JAPAN', label: 'Invoice from Japan' },
   { type: 'PAYMENT_PROOF', label: 'Payment Proof' },
   { type: 'AUCTION_SHEET', label: 'Auction Sheet' },

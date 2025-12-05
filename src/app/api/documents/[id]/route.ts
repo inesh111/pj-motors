@@ -26,9 +26,12 @@ export async function GET(_req: Request, { params }: RouteContext) {
   }
 
   const absPath = path.join(process.cwd(), doc.filePath);
-  let fileData: Buffer;
+  let arrayBuffer: ArrayBuffer;
+
   try {
-    fileData = await fs.readFile(absPath);
+    const buf = await fs.readFile(absPath); // Buffer
+    // Convert Node Buffer → ArrayBuffer slice (what the Fetch Response type expects)
+    arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   } catch {
     return NextResponse.json(
       { error: 'File missing on disk' },
@@ -46,7 +49,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   else if (ext === '.xls') contentType = 'application/vnd.ms-excel';
 
-  return new NextResponse(fileData, {
+  return new Response(arrayBuffer, {
     status: 200,
     headers: {
       'Content-Type': contentType,

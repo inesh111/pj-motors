@@ -106,7 +106,7 @@ export default async function CarDetailPage({ params }: PageProps) {
           </h2>
 
           <p className="mb-3 text-xs text-slate-400">
-            Attach export cert, expense sheet, B/L, VIA, compliance, ROC, RWC,
+            Attach export cert, expense sheet, B/L, VIA, compliance, RWC,
             invoice from Japan, payment proof, auction sheet and car pictures
             for this chassis.
           </p>
